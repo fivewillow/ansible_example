@@ -1,0 +1,45 @@
+---
+- name: Install nginx server
+  hosts: web01
+  become: yes
+  gather_facts: true
+
+  vars:
+    http_port: 80
+
+
+  tasks:
+
+    - name: NGINX | Installing NGINX repo rpm
+      yum:
+        name: http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
+
+    - name: NGINX | Installing NGINX
+      yum:
+        name: nginx
+        state: present
+
+    - name: NGINX | Coping default configaration file
+      template:
+        src: "{{ playbook_dir }}/conf/default.conf.j2"
+        dest: /etc/nginx/conf.d/default.conf
+      notify: NGINX | Restart
+
+    - name: NGINX | Coping index.html
+      template:
+        src: "{{ playbook_dir }}/html/index.html.j2"
+        dest: /usr/share/nginx/html/index.html
+      notify: NGINX | Restart
+
+
+  handlers:
+    - name: NGINX | Restart
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: true
+
+
+
+
+
